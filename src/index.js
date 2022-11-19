@@ -39,7 +39,6 @@ let scene = new THREE.Scene()
 let renderer = createRenderer({ antialias: false, alpha: false }, (_renderer) => {
   // e.g. uncomment below if you want the output to be in sRGB color space
   // _renderer.outputEncoding = THREE.sRGBEncoding
-  _renderer.shadowMap.enabled = true
 })
 
 // Create the camera
@@ -64,13 +63,14 @@ let app = {
     this.controls = new OrbitControls(camera, renderer.domElement)
     this.controls.enableDamping = true
 
-    let gridHelper = new THREE.GridHelper(20, 20)
-    gridHelper.position.y = -1
-    scene.add(gridHelper)
+    // Uncomment to show grid helper for a concrete reference of the 3D space taken by the smoke
+    // let gridHelper = new THREE.GridHelper(20, 20)
+    // gridHelper.position.y = -1
+    // scene.add(gridHelper)
 
     scene.fog = new THREE.Fog(params.fogNear, params.fogNear, params.fogFar)
 
-    let geometry = new THREE.SphereGeometry(0.7, 32, 16)
+    let geometry = new THREE.SphereGeometry(0.7, 24, 24)
     let material = new THREE.MeshBasicMaterial({
       color: params.blobColor
     })
@@ -78,8 +78,6 @@ let app = {
     this.world = new THREE.Object3D();
     for (let i = 0; i < params.blobNumber; i++) {
       let blob = new THREE.Mesh(geometry, material)
-      blob.castShadow = true
-      blob.receiveShadow = true
 
       blob.position.x = -Math.random() * params.blobInitialPosMultiplier + Math.random() * params.blobInitialPosMultiplier
       blob.position.z = -Math.random() * params.blobInitialPosMultiplier + Math.random() * params.blobInitialPosMultiplier
@@ -87,9 +85,9 @@ let app = {
       let blob_scale = Math.random()
       blob.scale.set(blob_scale, blob_scale, blob_scale)
       if (i == 0) {
+        // first blob acts as the movement guide of all subsequent blobs and it has a regular circular path
+        // better to make it invisible because it's movement does not look random
         blob.visible = false
-        // blob.material.color = new THREE.Color(0xffff00)
-        // blob.scale.set(2, 2, 2)
       }
 
       this.world.add(blob)
@@ -117,11 +115,13 @@ let app = {
     this.stats1.update()
 
     let first_obj = this.world.children[0]
+    // to make the smoke follow our mouse, we need to transform the mouse's screen coordiantes into world space coordinates
     let mouseWorldSpace = screenToWorldSpace({ ...this.uniforms.u_mouse.value, z: 0 }, camera)
     let offset = {
       x: params.followMouse ? mouseWorldSpace.x : 0,
       y: params.followMouse ? mouseWorldSpace.y : 0,
     }
+    // the first blob has a regular circular path (x y positions are calculated using the parametric function for a circle)
     first_obj.position.set(
       offset.x + Math.cos(elapsed * 2.0),
       offset.y + Math.sin(elapsed * 2.0),
@@ -132,6 +132,11 @@ let app = {
       var object = this.world.children[i]
       var object_left = this.world.children[i - 1]
       if (i >= 1) {
+        // position of each blob is calculated by the cos/sin function of its previous blob's slightly scaled up position
+        // such that each blob is has x, y and z coordinates inside -1 and 1, while a pseudo-randomness of positions is achieved
+        // adding in the offset in case the 'followMouse' is toggled on (it is {x: 0, y: 0} when 'followMouse' is off)
+        // here I'm using GSAP's to function with a long enough duration which is just right to help produce the pseudo-randomness
+        // it involves a bit of experimentation to get the duration right
         gsap.to(object.position, {
           duration: params.gsapDuration,
           x: offset.x + Math.cos(object_left.position.x * 3),
