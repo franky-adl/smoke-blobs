@@ -6,7 +6,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
 // Core boilerplate code deps
 import { createCamera, createRenderer, runApp } from "./core-utils"
-import gsap from "gsap"
 import { screenToWorldSpace } from "./common-utils"
 
 global.THREE = THREE
@@ -22,7 +21,7 @@ const params = {
   blobColor: 0x00FFFF,
   blobNumber: 100,
   blobInitialPosMultiplier: 10,
-  gsapDuration: 2.0, // this param controls the speed of which the blobs move, also affects the eventual moving patterns of the blobs
+  lerpFactor: 0.05, // this param controls the speed of which the blobs move, also affects the eventual moving patterns of the blobs
   followMouse: false,
 }
 
@@ -135,14 +134,15 @@ let app = {
         // position of each blob is calculated by the cos/sin function of its previous blob's slightly scaled up position
         // such that each blob is has x, y and z coordinates inside -1 and 1, while a pseudo-randomness of positions is achieved
         // adding in the offset in case the 'followMouse' is toggled on (it is {x: 0, y: 0} when 'followMouse' is off)
-        // here I'm using GSAP's to function with a long enough duration which is just right to help produce the pseudo-randomness
-        // it involves a bit of experimentation to get the duration right
-        gsap.to(object.position, {
-          duration: params.gsapDuration,
-          x: offset.x + Math.cos(object_left.position.x * 3),
-          y: offset.y + Math.sin(object_left.position.y * 3),
-          z: Math.cos(object_left.position.z * 3),
-        })
+        // here I'm using the built-in lerp function with a small enough interpolation factor which is just right to help produce the pseudo-randomness
+        // it involves a bit of experimentation to get the feel right
+        object.position.lerp(
+          new THREE.Vector3(
+            offset.x + Math.cos(object_left.position.x * 3),
+            offset.y + Math.sin(object_left.position.y * 3),
+            Math.cos(object_left.position.z * 3),
+          ), params.lerpFactor
+        )
       }
     }
   }
