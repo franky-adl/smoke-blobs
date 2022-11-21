@@ -5,7 +5,7 @@ import Stats from "three/examples/jsm/libs/stats.module"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
 // Core boilerplate code deps
-import { createCamera, createComposer, createRenderer, runApp } from "./core-utils"
+import { createCamera, createRenderer, runApp } from "./core-utils"
 import gsap from "gsap"
 import { screenToWorldSpace } from "./common-utils"
 
