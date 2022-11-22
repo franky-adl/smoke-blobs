@@ -119,12 +119,13 @@ let app = {
     let offset = {
       x: params.followMouse ? mouseWorldSpace.x : 0,
       y: params.followMouse ? mouseWorldSpace.y : 0,
+      z: params.followMouse ? mouseWorldSpace.z : 0,
     }
     // the first blob has a regular circular path (x y positions are calculated using the parametric function for a circle)
     first_obj.position.set(
       offset.x + Math.cos(elapsed * 2.0),
       offset.y + Math.sin(elapsed * 2.0),
-      Math.sin(elapsed * 2.0)
+      offset.z + Math.sin(elapsed * 2.0)
     )
 
     for (let i = 0, l = this.world.children.length; i < l; i++) {
@@ -140,7 +141,7 @@ let app = {
           new THREE.Vector3(
             offset.x + Math.cos(object_left.position.x * 3),
             offset.y + Math.sin(object_left.position.y * 3),
-            Math.cos(object_left.position.z * 3),
+            offset.z + Math.cos(object_left.position.z * 3),
           ), params.lerpFactor
         )
       }
