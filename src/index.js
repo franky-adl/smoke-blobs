@@ -115,7 +115,7 @@ let app = {
 
     let first_obj = this.world.children[0]
     // to make the smoke follow our mouse, we need to transform the mouse's screen coordiantes into world space coordinates
-    let mouseWorldSpace = screenToWorldSpace({ ...this.uniforms.u_mouse.value, z: 0 }, camera)
+    let mouseWorldSpace = screenToWorldSpace({ ...this.uniforms.u_mouse.value }, 0, camera)
     let offset = {
       x: params.followMouse ? mouseWorldSpace.x : 0,
       y: params.followMouse ? mouseWorldSpace.y : 0,
